@@ -1,0 +1,5003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureGate - AI-Powered Authentication System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            padding: 8px;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Desktop optimizations - ensure everything fits in one page */
+        @media (min-width: 1025px) {
+            body {
+                padding: 6px;
+            }
+            
+            .main-layout {
+                gap: 10px;
+                height: calc(100vh - 12px);
+            }
+            
+            .container {
+                padding: 16px;
+                border-radius: 14px;
+            }
+        }
+
+        /* Enable scrolling on small screens */
+        @media (max-height: 700px), (max-width: 1024px) {
+            body {
+                min-height: 100vh;
+                height: auto;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            .main-layout {
+                min-height: calc(100vh - 16px);
+                height: auto;
+            }
+        }
+
+        /* Main Layout Container */
+        .main-layout {
+            display: flex;
+            gap: 12px;
+            max-width: 100%;
+            margin: 0 auto;
+            height: calc(100vh - 16px);
+            align-items: stretch;
+        }
+
+        /* Left Panel - Main Authentication */
+        .left-panel {
+            flex: 1;
+            min-width: 320px;
+            max-width: 50%;
+        }
+
+        /* Right Panel - Authentication Details */
+        .right-panel {
+            flex: 1;
+            min-width: 320px;
+            max-width: 50%;
+        }
+
+        /* Base container styling */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            transition: all 0.5s ease;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Right panel specific - ensure proper height distribution */
+        .right-panel .container {
+            overflow: hidden;
+        }
+
+        .auth-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .auth-method {
+            display: none;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .auth-method.active {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .auth-method-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 0;
+        }
+
+        /* Specific containers for different auth methods */
+        .pin-method-container,
+        .voice-container,
+        .auth-method-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 0;
+        }
+
+        /* Desktop specific centering adjustments */
+        @media (min-width: 1025px) {
+            .container {
+                padding: 12px;
+                border-radius: 12px;
+            }
+            
+            .right-panel .container {
+                overflow: hidden;
+            }
+            
+            .auth-method-container,
+            .pin-method-container,
+            .voice-container {
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 1024px) {
+            body {
+                padding: 6px;
+            }
+            
+            .main-layout {
+                flex-direction: column;
+                height: calc(100vh - 12px);
+                gap: 8px;
+            }
+            
+            .left-panel,
+            .right-panel {
+                min-width: unset;
+                max-width: unset;
+                flex: 1;
+            }
+            
+            .container {
+                padding: 15px;
+                border-radius: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 4px;
+            }
+            
+            .main-layout {
+                gap: 6px;
+                height: calc(100vh - 8px);
+                min-height: calc(100vh - 8px);
+            }
+            
+            .container {
+                padding: 12px;
+                border-radius: 10px;
+            }
+        }
+
+        /* Smooth scrolling for small screens only */
+        @media (max-height: 700px), (max-width: 1024px) {
+            html {
+                scroll-behavior: smooth;
+            }
+            
+            .container {
+                /* Add subtle scroll indicators */
+                scrollbar-width: thin;
+                scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
+            }
+            
+            .container::-webkit-scrollbar {
+                width: 6px;
+            }
+            
+            .container::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            
+            .container::-webkit-scrollbar-thumb {
+                background: rgba(102, 126, 234, 0.3);
+                border-radius: 3px;
+            }
+            
+            .container::-webkit-scrollbar-thumb:hover {
+                background: rgba(102, 126, 234, 0.5);
+            }
+        }
+
+        .logo {
+            font-size: clamp(1.3rem, 3.5vw, 1.6rem);
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        /* Desktop specific optimizations - more aggressive */
+        @media (min-width: 1025px) {
+            body {
+                padding: 4px;
+            }
+            
+            .main-layout {
+                gap: 8px;
+                height: calc(100vh - 8px);
+            }
+            
+            .container {
+                padding: 12px;
+                border-radius: 12px;
+            }
+            
+            .logo {
+                font-size: 1.2rem;
+                margin-bottom: 2px;
+            }
+            
+            .ai-powered-badge {
+                font-size: 7px;
+                padding: 2px 4px;
+            }
+            
+            .subtitle {
+                margin-bottom: 6px;
+                font-size: 0.75rem;
+            }
+            
+            .gateway-info {
+                padding: 8px;
+                margin-bottom: 6px;
+            }
+            
+            .gateway-info h2 {
+                margin-bottom: 2px;
+                font-size: 0.95rem;
+            }
+            
+            .gateway-info p {
+                font-size: 0.75rem;
+            }
+            
+            .auth-instruction {
+                padding: 6px;
+                margin-bottom: 6px;
+                font-size: 0.72rem;
+            }
+            
+            .contact-admin {
+                padding: 6px;
+                margin-bottom: 6px;
+                font-size: 0.72rem;
+            }
+            
+            .contact-admin-text {
+                margin-bottom: 4px;
+            }
+            
+            .contact-admin-btn {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+            }
+            
+            .method-selector {
+                gap: 4px;
+                margin-bottom: 6px;
+            }
+            
+            .method-btn {
+                padding: 6px 4px;
+                min-height: 35px;
+                font-size: 0.65rem;
+                gap: 2px;
+            }
+            
+            .method-icon {
+                font-size: 0.9rem;
+            }
+            
+            .help-section {
+                margin-top: 6px;
+                padding-top: 6px;
+            }
+            
+            .help-links {
+                gap: 10px;
+            }
+            
+            .help-link {
+                font-size: 0.7rem;
+                padding: 2px 6px;
+            }
+            
+            #messageArea {
+                min-height: 8px;
+                margin: 4px 0;
+            }
+            
+            .admin-toggle {
+                top: 8px;
+                right: 8px;
+                width: 28px;
+                height: 28px;
+                font-size: 0.9rem;
+            }
+        }
+
+        .ai-powered-badge {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            animation: pulse-glow 3s infinite;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 12px;
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+            text-align: center;
+        }
+
+        .auth-methods-section {
+            margin-bottom: 15px;
+        }
+
+        .method-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+            padding: 3px;
+        }
+
+        @media (max-width: 480px) {
+            .method-selector {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 5px;
+            }
+        }
+
+        .method-btn {
+            padding: 10px 8px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: clamp(0.65rem, 1.8vw, 0.75rem);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-height: 55px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .method-icon {
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            transition: transform 0.3s ease;
+        }
+
+        .admin-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .auth-method h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: clamp(0.85rem, 2.2vw, 1rem);
+            font-weight: 600;
+        }
+
+        .schema-container {
+            position: relative;
+            max-width: 180px;
+            margin: 0 auto 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .schema-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(15px, 4vw, 25px);
+            position: relative;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .schema-dot {
+            width: clamp(25px, 6vw, 35px);
+            height: clamp(25px, 6vw, 35px);
+            border: 2px solid #bbb;
+            border-radius: 50%;
+            background: white;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .schema-instructions {
+            color: #666;
+            font-size: clamp(0.7rem, 1.6vw, 0.8rem);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .schema-pattern {
+            margin-bottom: 12px;
+        }
+
+        .schema-pattern h4 {
+            color: #333;
+            margin-bottom: 6px;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+        }
+
+        .pattern-display {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 6px;
+            font-family: monospace;
+            font-size: clamp(0.75rem, 1.6vw, 0.85rem);
+            color: #666;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .pattern-feedback {
+            margin-top: 8px;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: clamp(0.7rem, 1.6vw, 0.8rem);
+            text-align: center;
+        }
+
+        .pin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(6px, 2vw, 10px);
+            max-width: 160px;
+            margin: 0 auto 12px;
+        }
+
+        .pin-btn {
+            width: clamp(35px, 8vw, 45px);
+            height: clamp(35px, 8vw, 45px);
+            border: 2px solid #e9ecef;
+            border-radius: 50%;
+            background: white;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .pin-display {
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            letter-spacing: clamp(4px, 1.5vw, 8px);
+            margin-bottom: 12px;
+            color: #333;
+            font-family: monospace;
+            min-height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+            border: 2px solid #e9ecef;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: clamp(8px, 2vw, 10px);
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            margin-bottom: 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        .camera-video {
+            width: 100%;
+            max-width: 180px;
+            height: clamp(100px, 15vw, 130px);
+            border-radius: 10px;
+            object-fit: cover;
+            background: #f0f0f0;
+            border: 2px solid #e9ecef;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .camera-btn {
+            padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 10px);
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            font-size: clamp(0.7rem, 1.6vw, 0.8rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .biometric-sensor {
+            width: clamp(60px, 15vw, 80px);
+            height: clamp(60px, 15vw, 80px);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #fff;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .biometric-sensor::before {
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            position: absolute;
+            z-index: 2;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px);
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .half-width {
+            width: calc(50% - 4px);
+            margin-top: 0;
+            flex: 1;
+        }
+
+        @media (min-width: 1025px) {
+            .submit-btn {
+                padding: 4px 12px;
+                font-size: 0.7rem;
+            }
+            
+            .button-row {
+                gap: 6px;
+                margin-top: 6px;
+            }
+            
+            .half-width {
+                width: calc(50% - 3px);
+            }
+        }
+
+        .success-message, .error-message {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-top: 8px;
+            font-size: clamp(0.75rem, 2vw, 0.85rem);
+            text-align: center;
+            animation: slideInFromTop 0.3s ease-out;
+        }
+
+        .auth-method-container p {
+            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            margin-top: 6px;
+            text-align: center;
+            color: #666;
+        }
+
+        .voice-container p {
+            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            margin: 6px 0;
+            text-align: center;
+            color: #666;
+        }
+
+        #voiceStatus {
+            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            margin: 6px 0;
+            text-align: center;
+            color: #666;
+        }
+
+        /* Desktop specific size reductions */
+        @media (min-width: 1025px) {
+            .auth-method h3 {
+                font-size: 0.8rem;
+                margin-bottom: 4px;
+            }
+            
+            .schema-container {
+                max-width: 100px;
+                margin: 0 auto 6px;
+                padding: 6px;
+            }
+            
+            .schema-grid {
+                gap: 8px;
+            }
+            
+            .schema-dot {
+                width: 18px;
+                height: 18px;
+                border-width: 1px;
+            }
+            
+            .schema-instructions {
+                font-size: 0.65rem;
+                margin-bottom: 4px;
+            }
+            
+            .schema-pattern {
+                margin-bottom: 6px;
+            }
+            
+            .schema-pattern h4 {
+                font-size: 0.7rem;
+                margin-bottom: 3px;
+            }
+            
+            .pattern-display {
+                padding: 4px;
+                font-size: 0.65rem;
+            }
+            
+            .pattern-feedback {
+                margin-top: 4px;
+                padding: 3px;
+                font-size: 0.6rem;
+            }
+            
+            .pin-grid {
+                max-width: 120px;
+                margin: 0 auto 8px;
+                gap: 5px;
+            }
+            
+            .pin-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8rem;
+            }
+            
+            .pin-display {
+                font-size: 1rem;
+                letter-spacing: 3px;
+                margin-bottom: 8px;
+                padding: 6px;
+                min-height: 20px;
+            }
+            
+            .camera-video {
+                max-width: 140px;
+                height: 90px;
+            }
+            
+            .biometric-sensor {
+                width: 60px;
+                height: 60px;
+                margin: 8px auto;
+            }
+            
+            .biometric-sensor::before {
+                font-size: 1.2rem;
+            }
+            
+            .submit-btn {
+                padding: 6px;
+                font-size: 0.75rem;
+                margin-top: 6px;
+            }
+            
+            .auth-method-container p,
+            .voice-container p,
+            #voiceStatus {
+                font-size: 0.65rem;
+                margin: 4px 0;
+            }
+        }
+
+        #messageArea {
+            min-height: 15px;
+            margin: 10px 0;
+        }
+
+        .gateway-info {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: clamp(12px, 3vw, 18px);
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .gateway-info h2 {
+            margin-bottom: 6px;
+            font-size: clamp(1.1rem, 3.5vw, 1.3rem);
+        }
+
+        .gateway-info p {
+            font-size: clamp(0.8rem, 2.2vw, 0.95rem);
+        }
+
+        .auth-instruction {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: clamp(10px, 2.5vw, 15px);
+            margin-bottom: 15px;
+            border-radius: 0 6px 6px 0;
+            font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+        }
+
+        .contact-admin {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: clamp(12px, 2.5vw, 15px);
+            margin-bottom: 15px;
+            border-radius: 0 6px 6px 0;
+            font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+        }
+
+        .contact-admin-text {
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .contact-admin-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contact-admin-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .help-section {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .help-links {
+            display: flex;
+            justify-content: center;
+            gap: clamp(12px, 3vw, 20px);
+            flex-wrap: wrap;
+        }
+
+        .help-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+
+        .auth-method h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: clamp(1rem, 2.8vw, 1.2rem);
+            font-weight: 600;
+        }
+
+        .auth-method {
+            display: none;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .auth-method.active {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-method-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Desktop specific centering adjustments */
+        @media (min-width: 1025px) {
+            .auth-method h3 {
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+            }
+            
+            .auth-method.active {
+                justify-content: center;
+                align-items: center;
+            }
+            
+            .auth-method-container {
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
+        /* Desktop optimizations for right panel - more aggressive */
+        @media (min-width: 1025px) {
+            .auth-method h3 {
+                font-size: 0.9rem;
+                margin-bottom: 6px;
+            }
+            
+            .schema-container {
+                max-width: 160px;
+                margin: 0 auto 8px;
+                padding: 8px;
+            }
+            
+            .schema-grid {
+                gap: 18px;
+            }
+            
+            .schema-dot {
+                width: 28px;
+                height: 28px;
+                border-width: 2px;
+            }
+            
+            .schema-instructions {
+                font-size: 0.7rem;
+                margin-bottom: 6px;
+            }
+            
+            .schema-pattern {
+                margin-bottom: 8px;
+            }
+            
+            .schema-pattern h4 {
+                font-size: 0.8rem;
+                margin-bottom: 4px;
+            }
+            
+            .pattern-display {
+                padding: 4px;
+                font-size: 0.75rem;
+            }
+            
+            .pattern-feedback {
+                margin-top: 6px;
+                padding: 4px;
+                font-size: 0.7rem;
+            }
+            
+            .submit-btn {
+                padding: 6px;
+                font-size: 0.75rem;
+                margin-top: 6px;
+            }
+            
+            .pin-grid {
+                max-width: 140px;
+                margin: 0 auto 8px;
+                gap: 6px;
+            }
+            
+            .pin-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+            
+            .pin-display {
+                font-size: 1.1rem;
+                letter-spacing: 4px;
+                margin-bottom: 8px;
+                padding: 6px;
+                min-height: 20px;
+            }
+            
+            .input-field {
+                padding: 6px;
+                font-size: 0.8rem;
+                margin-bottom: 6px;
+            }
+            
+            .camera-container {
+                margin-bottom: 8px;
+            }
+            
+            .camera-video {
+                max-width: 160px;
+                height: 100px;
+            }
+            
+            .camera-controls {
+                margin-bottom: 8px;
+                gap: 4px;
+            }
+            
+            .camera-btn {
+                padding: 4px 6px;
+                font-size: 0.7rem;
+            }
+            
+            .biometric-sensor {
+                width: 70px;
+                height: 70px;
+                margin: 8px auto;
+                border-width: 2px;
+            }
+            
+            .biometric-sensor::before {
+                font-size: 1.5rem;
+            }
+            
+            .success-message, .error-message {
+                padding: 4px 8px;
+                font-size: 0.75rem;
+                margin-top: 6px;
+            }
+            
+            .auth-method-container {
+                justify-content: flex-start;
+            }
+            
+            .auth-method-container p {
+                font-size: 0.7rem;
+                margin-top: 6px;
+                text-align: center;
+            }
+            
+            .voice-container {
+                text-align: center;
+            }
+            
+            #voiceStatus {
+                font-size: 0.7rem;
+                margin: 6px 0;
+            }
+        }
+
+        .auth-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .auth-method {
+            display: none;
+            height: 100%;
+        }
+
+        .auth-method.active {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .auth-method-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 0;
+            height: 100%;
+        }
+
+        /* Desktop specific centering adjustments */
+        @media (min-width: 1025px) {
+            .auth-method-container {
+                justify-content: center;
+                height: 100%;
+            }
+        }
+
+        /* PIN method specific */
+        .pin-method-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+        }
+
+        /* Voice container specific */
+        .voice-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+        }
+
+        /* Admin Modal Styles */
+        .admin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .admin-content {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            color: #1a202c;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .admin-content h3 {
+            margin-bottom: 24px;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+        }
+
+        .admin-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ef4444;
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .admin-close-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Admin Login Form */
+        .admin-login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .admin-login-form input {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            color: #1a202c;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .admin-login-form input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .admin-login-form label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .admin-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-btn:hover {
+            background: linear-gradient(45deg, #5a67d8, #6b46c1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .admin-btn.secondary {
+            background: #6b7280;
+        }
+
+        .admin-btn.secondary:hover {
+            background: #4b5563;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Admin Panel Styles */
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .admin-section h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .admin-controls {
+            display: grid;
+            gap: 15px;
+        }
+
+        .admin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+            gap: 15px;
+        }
+
+        .admin-item:last-child {
+            border-bottom: none;
+        }
+
+        .admin-buttons-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .admin-btn.danger {
+            background: #dc3545;
+        }
+
+        .admin-btn.danger:hover {
+            background: #c82333;
+        }
+
+        .file-upload {
+            padding: 15px;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .file-upload:hover {
+            background: #f0f0ff;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .admin-panel-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(45deg, #5a6268, #495057);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Mobile responsive for admin */
+        @media (max-width: 768px) {
+            .admin-content {
+                padding: 20px;
+                width: 95%;
+                max-height: 90vh;
+            }
+            
+            .admin-buttons-row {
+                flex-direction: column;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* AI Chat Widget */
+        .ai-chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .ai-chat-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #10b981, #059669);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse-glow 3s infinite;
+        }
+
+        .ai-chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+        }
+
+        .ai-chat-toggle.active {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6), 0 0 0 10px rgba(16, 185, 129, 0.1); }
+        }
+
+        .ai-chat-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 400px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 9998;
+            animation: slideInUp 0.3s ease;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .ai-chat-header {
+            background: linear-gradient(90deg, #10b981, #059669);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ai-chat-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-status-indicator {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .ai-chat-minimize {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .ai-chat-minimize:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .ai-chat-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            color: #1a202c;
+        }
+
+        .ai-message {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-message-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .ai-avatar {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+        }
+
+        .user-avatar {
+            background: linear-gradient(45deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+
+        .security-avatar {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .ai-message-content {
+            flex: 1;
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.4;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .ai-message.user .ai-message-content {
+            background: linear-gradient(45deg, #4f46e5, #7c3aed);
+            color: white;
+            margin-left: auto;
+        }
+
+        .ai-message.security .ai-message-content {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            border: 2px solid #fca5a5;
+        }
+
+        .ai-message-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .ai-action-btn {
+            background: none;
+            border: 1px solid #d1d5db;
+            color: #64748b;
+            padding: 3px 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .ai-action-btn:hover {
+            color: #10b981;
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .ai-action-btn.speaking {
+            color: #ef4444;
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .ai-message.user .ai-message-actions {
+            border-top-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .ai-message.user .ai-action-btn {
+            border-color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .ai-message.user .ai-action-btn:hover {
+            border-color: white;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .ai-chat-input {
+            padding: 15px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ai-input-field {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 15px;
+            font-size: 13px;
+            outline: none;
+            resize: none;
+            max-height: 80px;
+            min-height: 32px;
+        }
+
+        .ai-input-field:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+        }
+
+        .ai-input-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .ai-control-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .ai-image-btn {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .ai-image-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .ai-mic-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .ai-mic-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .ai-mic-btn.recording {
+            background: #ef4444;
+            color: white;
+            animation: pulse-recording 1.5s infinite;
+        }
+
+        @keyframes pulse-recording {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .ai-send-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .ai-send-btn:hover {
+            background: #059669;
+        }
+
+        .ai-send-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .ai-security-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            animation: slideInRight 0.3s ease;
+            max-width: 350px;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .ai-security-icon {
+            font-size: 20px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .ai-analyzing-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            z-index: 9999;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .ai-analyzing-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile responsive for AI chat */
+        @media (max-width: 768px) {
+            .ai-chat-panel {
+                width: calc(100vw - 20px);
+                right: 10px;
+                left: 10px;
+                bottom: 90px;
+                height: 500px;
+            }
+            
+            .ai-chat-widget {
+                bottom: 15px;
+                right: 15px;
+            }
+            
+            .ai-chat-toggle {
+                width: 55px;
+                height: 55px;
+                font-size: 22px;
+            }
+        }
+
+        .logo {
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .ai-powered-badge {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            animation: pulse-glow 3s infinite;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: clamp(0.8rem, 2.5vw, 1rem);
+            text-align: center;
+        }
+
+        .auth-method {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .auth-method.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-methods-section {
+            margin-bottom: 20px;
+        }
+
+        .method-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+            padding: 5px;
+        }
+
+        @media (max-width: 480px) {
+            .method-selector {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+        }
+
+        .method-btn {
+            padding: 15px 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: clamp(0.7rem, 2vw, 0.85rem);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-height: 75px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .method-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .method-btn:hover::before {
+            left: 100%;
+        }
+
+        .method-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+        }
+
+        .method-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .method-icon {
+            font-size: clamp(1.2rem, 4vw, 1.4rem);
+            transition: transform 0.3s ease;
+        }
+
+        .method-btn:hover .method-icon {
+            transform: scale(1.1);
+        }
+
+        .method-btn.active .method-icon {
+            transform: scale(1.05);
+        }
+
+        .admin-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .admin-toggle:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: #667eea;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 480px) {
+            .admin-toggle {
+                top: 10px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Schema/Pattern specific styles */
+        .schema-container {
+            position: relative;
+            max-width: 280px;
+            margin: 0 auto 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        @media (max-width: 480px) {
+            .schema-container {
+                max-width: 260px;
+                padding: 15px;
+            }
+        }
+
+        .schema-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(30px, 8vw, 50px);
+            position: relative;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .schema-dot {
+            width: clamp(40px, 10vw, 60px);
+            height: clamp(40px, 10vw, 60px);
+            border: 3px solid #bbb;
+            border-radius: 50%;
+            background: white;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .schema-dot.connected {
+            background: #667eea;
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+            transform: scale(1.2);
+        }
+
+        .schema-dot.current {
+            background: #4facfe;
+            border-color: #4facfe;
+            transform: scale(1.3);
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.7);
+        }
+
+        .pattern-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .schema-instructions {
+            color: #666;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .pattern-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            text-align: center;
+        }
+
+        .pattern-feedback.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .pattern-feedback.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .pattern-feedback.drawing {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+
+        .schema-pattern {
+            margin-bottom: 20px;
+        }
+
+        .schema-pattern h4 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+        }
+
+        .pattern-display {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            color: #666;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        /* Other auth method styles */
+        .pin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(10px, 3vw, 15px);
+            max-width: 250px;
+            margin: 0 auto 20px;
+        }
+
+        .pin-btn {
+            width: clamp(50px, 12vw, 70px);
+            height: clamp(50px, 12vw, 70px);
+            border: 2px solid #e9ecef;
+            border-radius: 50%;
+            background: white;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .pin-btn:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .pin-btn:active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .pin-display {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            letter-spacing: clamp(8px, 2vw, 12px);
+            margin-bottom: 25px;
+            color: #333;
+            font-family: monospace;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: clamp(12px, 3vw, 15px);
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .camera-container {
+            position: relative;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .camera-video {
+            width: 100%;
+            max-width: 300px;
+            height: clamp(150px, 25vw, 200px);
+            border-radius: 15px;
+            object-fit: cover;
+            background: #f0f0f0;
+            border: 2px solid #e9ecef;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .camera-btn {
+            padding: clamp(10px, 2vw, 12px) clamp(12px, 3vw, 16px);
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .camera-btn:hover {
+            background: linear-gradient(45deg, #5a67d8, #6b46c1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .biometric-sensor {
+            width: clamp(100px, 25vw, 140px);
+            height: clamp(100px, 25vw, 140px);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #fff;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .biometric-sensor:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .biometric-sensor::before {
+            font-size: clamp(2rem, 8vw, 3rem);
+            position: absolute;
+            z-index: 2;
+        }
+
+        .fingerprint-sensor::before {
+            content: '👆';
+        }
+
+        .fingerprint-sensor {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border-color: #e3f2fd;
+        }
+
+        .fingerprint-sensor:hover {
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+        }
+
+        .voice-sensor::before {
+            content: '🎤';
+        }
+
+        .voice-sensor {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            border-color: #f3e5f5;
+        }
+
+        .voice-sensor:hover {
+            background: linear-gradient(135deg, #fed6e3, #a8edea);
+        }
+
+        .scanning {
+            animation: fingerprintScan 2s ease-in-out;
+            background: linear-gradient(135deg, #11998e, #38ef7d) !important;
+        }
+
+        .recording {
+            animation: voiceRecord 1.5s infinite;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+        }
+
+        @keyframes fingerprintScan {
+            0% { 
+                transform: scale(1); 
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            }
+            50% { 
+                transform: scale(1.1); 
+                box-shadow: 0 15px 40px rgba(17, 153, 142, 0.5);
+            }
+            100% { 
+                transform: scale(1); 
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            }
+        }
+
+        @keyframes voiceRecord {
+            0%, 100% { 
+                transform: scale(1); 
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.08); 
+                opacity: 0.8;
+            }
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: clamp(14px, 3vw, 16px);
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .success-message, .error-message {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-top: 15px;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            text-align: center;
+            animation: slideInFromTop 0.3s ease-out;
+        }
+
+        .success-message {
+            background: linear-gradient(90deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            box-shadow: 0 2px 10px rgba(21, 87, 36, 0.1);
+        }
+
+        .error-message {
+            background: linear-gradient(90deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            box-shadow: 0 2px 10px rgba(114, 28, 36, 0.1);
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #messageArea {
+            min-height: 20px;
+            margin: 15px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        .gateway-info {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: clamp(15px, 4vw, 25px);
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .gateway-info h2 {
+            margin-bottom: 10px;
+            font-size: clamp(1.3rem, 4vw, 1.6rem);
+        }
+
+        .gateway-info p {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+        }
+
+        .auth-instruction {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: clamp(12px, 3vw, 18px);
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        .contact-admin {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: clamp(15px, 3vw, 18px);
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+        }
+
+        .contact-admin-text {
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .contact-admin-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contact-admin-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .contact-admin-btn:hover {
+            background: #1976d2;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .contact-admin-btn.secondary {
+            background: #10b981;
+        }
+
+        .contact-admin-btn.secondary:hover {
+            background: #059669;
+        }
+
+        .help-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .help-links {
+            display: flex;
+            justify-content: center;
+            gap: clamp(15px, 4vw, 25px);
+            flex-wrap: wrap;
+        }
+
+        .help-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: clamp(0.85rem, 2vw, 0.95rem);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 15px;
+            border-radius: 8px;
+        }
+
+        .help-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+            text-decoration: underline;
+        }
+
+        /* Authentication method headers */
+        .auth-method h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
+            font-weight: 600;
+        }
+
+        /* Contact Panel Styles */
+        .contact-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contact-content {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            color: #1a202c;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+        }
+
+        .contact-content h3 {
+            margin-bottom: 24px;
+            color: #1a202c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .contact-form textarea {
+            min-height: 100px;
+            height: 100px;
+            max-height: 200px;
+            width: 100%;
+            resize: vertical;
+            font-family: inherit;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            color: #1a202c;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .contact-form textarea:focus,
+        .contact-form input:focus,
+        .contact-form select:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .contact-form input,
+        .contact-form select {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            color: #1a202c;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .contact-form label {
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .contact-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .contact-form-row .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .submit-contact-btn {
+            background: linear-gradient(45deg, #2196f3, #1976d2);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .submit-contact-btn:hover {
+            background: linear-gradient(45deg, #1976d2, #1565c0);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.3);
+        }
+
+        .submit-contact-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .cancel-btn {
+            background: #6b7280;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background: #4b5563;
+        }
+
+        .contact-success {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+            color: #059669;
+        }
+
+        .contact-success .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .contact-success h3 {
+            color: #059669 !important;
+            margin-bottom: 16px;
+            border: none;
+            padding: 0;
+            font-size: 24px;
+        }
+
+        .contact-success p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .contact-success .submit-contact-btn {
+            margin-top: 24px;
+            background: linear-gradient(45deg, #10b981, #059669);
+        }
+
+        .contact-success .submit-contact-btn:hover {
+            background: linear-gradient(45deg, #059669, #047857);
+        }
+
+        @media (max-width: 768px) {
+            .contact-content {
+                padding: 24px;
+                width: 95%;
+                max-height: 90vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .contact-form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .contact-form-row .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .contact-content {
+                padding: 20px;
+            }
+        }
+
+        /* Speech Control Styles */
+        .speech-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 5px;
+        }
+
+        .speech-control-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+        }
+
+        .speech-control-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .speech-control-btn.active {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Welcome Page Styles */
+        .welcome-page {
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+            padding: 0;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .welcome-header {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .welcome-subtext {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .credentials-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            border: 1px solid #e9ecef;
+        }
+
+        .credentials-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .credential-item:last-child {
+            border-bottom: none;
+        }
+
+        .credential-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: clamp(0.85rem, 2.2vw, 0.95rem);
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .credential-status {
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+            font-weight: 600;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .status-verified {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-secure {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b3d7ff;
+        }
+
+        .status-active {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .security-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .security-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: clamp(1.2rem, 3.5vw, 1.5rem);
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+        }
+
+        @media (min-width: 600px) {
+            .services-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .service-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+        }
+
+        .service-icon {
+            font-size: clamp(1.5rem, 4vw, 1.8rem);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .service-name {
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #6c757d, #5a6268);
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: clamp(0.9rem, 2.2vw, 1rem);
+            font-weight: 600;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+            width: auto;
+            min-width: 180px;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(45deg, #5a6268, #495057);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Desktop specific welcome page optimizations */
+        @media (min-width: 1025px) {
+            .welcome-header {
+                font-size: 1.4rem;
+                margin-bottom: 8px;
+            }
+            
+            .welcome-subtext {
+                font-size: 0.9rem;
+                margin-bottom: 15px;
+            }
+            
+            .credentials-section {
+                padding: 15px;
+                margin: 15px 0;
+            }
+            
+            .credentials-section h3 {
+                font-size: 1rem;
+                margin-bottom: 12px;
+            }
+            
+            .credential-item {
+                padding: 8px 0;
+            }
+            
+            .credential-label {
+                font-size: 0.8rem;
+            }
+            
+            .credential-status {
+                padding: 4px 10px;
+                font-size: 0.75rem;
+            }
+            
+            .security-stats {
+                gap: 10px;
+                margin-top: 12px;
+            }
+            
+            .stat-card {
+                padding: 12px;
+            }
+            
+            .stat-number {
+                font-size: 1.2rem;
+                margin-bottom: 4px;
+            }
+            
+            .stat-label {
+                font-size: 0.7rem;
+            }
+            
+            .services-grid {
+                gap: 12px;
+                margin-top: 15px;
+            }
+            
+            .service-card {
+                padding: 12px;
+            }
+            
+            .service-icon {
+                font-size: 1.4rem;
+                margin-bottom: 6px;
+            }
+            
+            .service-name {
+                font-size: 0.75rem;
+            }
+            
+            .logout-btn {
+                padding: 10px 25px;
+                font-size: 0.85rem;
+                margin-top: 20px;
+                min-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <!-- Left Panel - Main Authentication -->
+        <div class="left-panel">
+            <div class="container" id="leftContainer">
+                <div class="admin-toggle" onclick="toggleAdminMode()">👤</div>
+                
+                <!-- User Authentication Gateway -->
+                <div id="userGateway">
+                    <!-- Header Section -->
+                    <div class="header-section">
+                        <div class="logo">
+                            🔐 SecureGate
+                            <span class="ai-powered-badge">AI POWERED</span>
+                        </div>
+                        <div class="subtitle">Advanced AI-Enhanced Authentication System</div>
+                    </div>
+                    
+                    <!-- Info Section -->
+                    <div class="info-section">
+                        <div class="gateway-info">
+                            <h2>🤖 AI Security Checkpoint</h2>
+                            <p>Your authentication is protected by advanced AI analysis and verification</p>
+                        </div>
+
+                        <div class="auth-instruction">
+                            <strong>🔓 AI-Protected Access:</strong> Our AI assistant monitors and verifies all authentication attempts for maximum security.
+                        </div>
+
+                        <!-- Contact Admin Notice -->
+                        <div class="contact-admin">
+                            <div class="contact-admin-text">
+                                <strong>🔒 Need Help?</strong> Chat with our AI assistant or contact admin directly!
+                            </div>
+                            <div class="contact-admin-buttons">
+                                <button class="contact-admin-btn secondary" onclick="toggleAIChat()">
+                                    🤖 Chat with AI
+                                </button>
+                                <button class="contact-admin-btn" onclick="contactAdmin()">
+                                    📧 Contact Admin
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authentication Methods Section -->
+                    <div class="auth-methods-section">
+                        <!-- Authentication Method Selector -->
+                        <div class="method-selector">
+                            <div class="method-btn active" onclick="showMethod('schema')">
+                                <div class="method-icon">🔹</div>
+                                <div>Pattern</div>
+                            </div>
+                            <div class="method-btn" onclick="showMethod('pin')">
+                                <div class="method-icon">🔢</div>
+                                <div>PIN</div>
+                            </div>
+                            <div class="method-btn" onclick="showMethod('password')">
+                                <div class="method-icon">🔑</div>
+                                <div>Password</div>
+                            </div>
+                            <div class="method-btn" onclick="showMethod('fingerprint')">
+                                <div class="method-icon">👆</div>
+                                <div>Fingerprint</div>
+                            </div>
+                            <div class="method-btn" onclick="showMethod('faceid')">
+                                <div class="method-icon">📷</div>
+                                <div>Face ID</div>
+                            </div>
+                            <div class="method-btn" onclick="showMethod('voice')">
+                                <div class="method-icon">🎤</div>
+                                <div>Voice</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message Area -->
+                    <div id="messageArea"></div>
+
+                    <!-- Help Section -->
+                    <div class="help-section">
+                        <div class="help-links">
+                            <a href="#" class="help-link" onclick="showHelp()">🤖 AI Help</a>
+                            <a href="#" class="help-link" onclick="showTroubleshooting()">🔧 Troubleshooting</a>
+                            <a href="#" class="help-link" onclick="reportIssue()">🐛 Report Issue</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome Page -->
+                <div id="welcomePage" class="hidden">
+                    <div class="welcome-page">
+                        <div class="welcome-header">🎉 AI Verification Complete!</div>
+                        <div class="welcome-subtext">Welcome to your AI-secured digital vault</div>
+                        
+                        <!-- Authentication Status -->
+                        <div class="credentials-section">
+                            <h3>🤖 AI Security Session</h3>
+                            <div class="credential-item">
+                                <span class="credential-label">Authentication Method:</span>
+                                <span class="credential-status status-verified" id="authMethodUsed">AI-Verified Authentication</span>
+                            </div>
+                            <div class="credential-item">
+                                <span class="credential-label">AI Analysis Score:</span>
+                                <span class="credential-status status-secure" id="aiScore">99.7% Confidence</span>
+                            </div>
+                            <div class="credential-item">
+                                <span class="credential-label">Session Status:</span>
+                                <span class="credential-status status-active">AI-Protected</span>
+                            </div>
+                            <div class="credential-item">
+                                <span class="credential-label">Login Time:</span>
+                                <span class="credential-status status-secure" id="loginTime">Just now</span>
+                            </div>
+                        </div>
+
+                        <!-- Security Statistics -->
+                        <div class="credentials-section">
+                            <h3>📊 AI Security Overview</h3>
+                            <div class="security-stats">
+                                <div class="stat-card">
+                                    <div class="stat-number">100%</div>
+                                    <div class="stat-label">AI Secure</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">6</div>
+                                    <div class="stat-label">Auth Methods</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">0</div>
+                                    <div class="stat-label">Threats Blocked</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">AI</div>
+                                    <div class="stat-label">Enhanced</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Available Services -->
+                        <div class="credentials-section">
+                            <h3>🛡️ AI-Secured Services</h3>
+                            <p style="margin-bottom: 20px; color: #6c757d; font-size: clamp(0.9rem, 2.5vw, 1rem);">
+                                Access your AI-protected services and sensitive information
+                            </p>
+                            
+                            <div class="services-grid">
+                                <div class="service-card">
+                                    <div class="service-icon">🤖</div>
+                                    <div class="service-name">AI Assistant</div>
+                                </div>
+                                <div class="service-card">
+                                    <div class="service-icon">🔐</div>
+                                    <div class="service-name">Password Vault</div>
+                                </div>
+                                <div class="service-card">
+                                    <div class="service-icon">📁</div>
+                                    <div class="service-name">Encrypted Files</div>
+                                </div>
+                                <div class="service-card">
+                                    <div class="service-icon">💳</div>
+                                    <div class="service-name">Payment Cards</div>
+                                </div>
+                                <div class="service-card">
+                                    <div class="service-icon">🏦</div>
+                                    <div class="service-name">Banking Portal</div>
+                                </div>
+                                <div class="service-card">
+                                    <div class="service-icon">⚙️</div>
+                                    <div class="service-name">Settings</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="logout-btn" onclick="logout()">🚪 Secure Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Authentication Details -->
+        <div class="right-panel">
+            <div class="container" id="rightContainer">
+                <!-- Authentication Content -->
+                <div class="auth-content">
+
+                    <!-- Schema Mode Method -->
+                    <div id="schema-method" class="auth-method active">
+                        <div class="auth-method-container">
+                            <h3>🔹 Draw Unlock Pattern</h3>
+                            <div class="schema-pattern">
+                                <h4>Current Pattern:</h4>
+                                <div class="pattern-display" id="currentPattern">No pattern drawn</div>
+                            </div>
+                            
+                            <div class="schema-instructions">
+                                Draw your pattern by connecting the dots (AI will analyze for security)
+                            </div>
+                            
+                            <div class="schema-container">
+                                <div class="schema-grid" id="schemaGrid">
+                                    <canvas class="pattern-canvas" id="patternCanvas"></canvas>
+                                    <div class="schema-dot" data-index="0"></div>
+                                    <div class="schema-dot" data-index="1"></div>
+                                    <div class="schema-dot" data-index="2"></div>
+                                    <div class="schema-dot" data-index="3"></div>
+                                    <div class="schema-dot" data-index="4"></div>
+                                    <div class="schema-dot" data-index="5"></div>
+                                    <div class="schema-dot" data-index="6"></div>
+                                    <div class="schema-dot" data-index="7"></div>
+                                    <div class="schema-dot" data-index="8"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-feedback" id="patternFeedback" style="display: none;"></div>
+                            
+                            <div class="button-row">
+                                <button class="submit-btn half-width" onclick="clearSchema()">Clear Pattern</button>
+                                <button class="submit-btn half-width" onclick="submitSchema()">🤖 AI Verify Pattern</button>
+                            </div>
+                            <p style="margin-top: 15px; text-align: center;"><small>Demo pattern: Connect 1→2→3→6→9 (AI will analyze complexity)</small></p>
+                        </div>
+                    </div>
+
+                    <!-- PIN Method -->
+                    <div id="pin-method" class="auth-method">
+                        <div class="pin-method-container">
+                            <h3>🔢 Enter Security PIN</h3>
+                            <div class="pin-display" id="pinDisplay">••••</div>
+                            <div class="pin-grid">
+                                <button class="pin-btn" onclick="addPin('1')">1</button>
+                                <button class="pin-btn" onclick="addPin('2')">2</button>
+                                <button class="pin-btn" onclick="addPin('3')">3</button>
+                                <button class="pin-btn" onclick="addPin('4')">4</button>
+                                <button class="pin-btn" onclick="addPin('5')">5</button>
+                                <button class="pin-btn" onclick="addPin('6')">6</button>
+                                <button class="pin-btn" onclick="addPin('7')">7</button>
+                                <button class="pin-btn" onclick="addPin('8')">8</button>
+                                <button class="pin-btn" onclick="addPin('9')">9</button>
+                                <button class="pin-btn" onclick="clearPin()">⌫</button>
+                                <button class="pin-btn" onclick="addPin('0')">0</button>
+                                <button class="pin-btn" onclick="submitPin()">✓</button>
+                            </div>
+                            <p style="margin-top: 15px; text-align: center;"><small>Demo PIN: 1234 (AI analyzes input patterns)</small></p>
+                        </div>
+                    </div>
+
+                    <!-- Password Method -->
+                    <div id="password-method" class="auth-method">
+                        <div class="auth-method-container">
+                            <h3>🔑 Enter Access Password</h3>
+                            <input type="password" class="input-field" placeholder="Device Password" id="devicePassword">
+                            <button class="submit-btn" onclick="submitPassword()">🤖 AI Verify Password</button>
+                            <p style="margin-top: 15px; text-align: center;"><small>Demo Password: secure123 (AI checks strength)</small></p>
+                        </div>
+                    </div>
+
+                    <!-- Fingerprint Method -->
+                    <div id="fingerprint-method" class="auth-method">
+                        <div class="auth-method-container">
+                            <h3>👆 Fingerprint Scan</h3>
+                            <div class="biometric-sensor fingerprint-sensor" id="fingerprintSensor" onclick="scanFingerprint()">
+                            </div>
+                            <p style="text-align: center;">Touch the sensor (AI will analyze biometric patterns)</p>
+                        </div>
+                    </div>
+
+                    <!-- Face ID Method -->
+                    <div id="faceid-method" class="auth-method">
+                        <div class="auth-method-container">
+                            <h3>📷 Face Recognition</h3>
+                            <div class="camera-container">
+                                <video id="cameraVideo" class="camera-video" autoplay muted></video>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="camera-btn" onclick="switchCamera('front')">📱 Front</button>
+                                <button class="camera-btn" onclick="switchCamera('back')">📷 Back</button>
+                                <button class="camera-btn" onclick="startFaceRecognition()">🤖 AI Scan</button>
+                            </div>
+                            <p style="text-align: center;">Position your face in camera view (AI will analyze facial features)</p>
+                        </div>
+                    </div>
+
+                    <!-- Voice Recognition Method -->
+                    <div id="voice-method" class="auth-method">
+                        <div class="auth-method-container">
+                            <h3>🎤 Voice Recognition</h3>
+                            <div class="voice-container">
+                                <div class="biometric-sensor voice-sensor" id="voiceBtn" onclick="startVoiceRecognition()"></div>
+                                <p id="voiceStatus" style="text-align: center;">Click microphone (AI will analyze voice patterns)</p>
+                                <p style="text-align: center;"><small>Say the voice password (AI analyzes audio patterns)</small></p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div class="admin-modal" id="adminModal">
+        <div class="admin-content">
+            <button class="admin-close-btn" onclick="closeAdminModal()">✖</button>
+            
+            <!-- Admin Login Form -->
+            <div id="adminLoginForm">
+                <h3>👨‍💼 Administrator Login</h3>
+                
+                <div class="admin-login-form">
+                    <div class="form-group">
+                        <label for="adminUsername">Admin Username</label>
+                        <input type="text" id="adminUsername" placeholder="Enter admin username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adminPassword">Admin Password</label>
+                        <input type="password" id="adminPassword" placeholder="Enter admin password" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="admin-btn secondary" onclick="closeAdminModal()">Cancel</button>
+                        <button class="admin-btn" onclick="adminLogin()">🤖 AI Admin Login</button>
+                    </div>
+                    
+                    <p style="margin-top: 15px; text-align: center; color: #666;"><small>Demo: admin / admin123 (AI monitors admin access)</small></p>
+                </div>
+            </div>
+            
+            <!-- Admin Panel -->
+            <div id="adminPanel" class="admin-panel">
+                <h3>⚙️ AI Admin Panel</h3>
+                
+                <div class="admin-section">
+                    <h4>🤖 AI Security Settings</h4>
+                    <div class="admin-item">
+                        <span>AI Analysis Level:</span>
+                        <select id="aiAnalysisLevel">
+                            <option value="standard">Standard</option>
+                            <option value="enhanced" selected>Enhanced</option>
+                            <option value="maximum">Maximum Security</option>
+                        </select>
+                    </div>
+                    <div class="admin-item">
+                        <span>AI Threat Detection:</span>
+                        <span style="color: #28a745;">Active</span>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4>🔹 Schema Pattern Management</h4>
+                    <div class="admin-item">
+                        <span>Current Pattern:</span>
+                        <span id="adminCurrentPattern">1→2→3→6→9</span>
+                    </div>
+                    <input type="text" class="input-field" placeholder="New Pattern (e.g., 1→2→3→6→9)" id="newSchemaPattern">
+                    <div class="admin-buttons-row">
+                        <button class="admin-btn" onclick="updateSchemaPattern()">Update Pattern</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4>🔢 PIN Management</h4>
+                    <div class="admin-item">
+                        <span>Current PIN:</span>
+                        <span>••••</span>
+                    </div>
+                    <input type="password" class="input-field" placeholder="New 4-digit PIN" id="newPin" maxlength="4">
+                    <div class="admin-buttons-row">
+                        <button class="admin-btn" onclick="updatePin()">Update PIN</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4>🔑 Password Management</h4>
+                    <div class="admin-item">
+                        <span>Current Password:</span>
+                        <span>••••••••</span>
+                    </div>
+                    <input type="password" class="input-field" placeholder="New Password" id="newPassword">
+                    <div class="admin-buttons-row">
+                        <button class="admin-btn" onclick="updatePassword()">Update Password</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4>📷 Face Recognition Setup</h4>
+                    <div class="admin-item">
+                        <span>Authorized Faces:</span>
+                        <span id="faceCount">1 registered</span>
+                    </div>
+                    <div class="file-upload" onclick="document.getElementById('faceUpload').click()">
+                        <input type="file" id="faceUpload" accept="image/*" onchange="uploadFace(event)">
+                        📁 Upload New Face Image (AI will analyze)
+                    </div>
+                    <div class="admin-buttons-row">
+                        <button class="admin-btn danger" onclick="clearFaces()">Clear All Faces</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4>👆 Fingerprint Management</h4>
+                    <div class="admin-item">
+                        <span>Enrolled Fingerprints:</span>
+                        <span id="fingerprintCount">2 stored</span>
+                    </div>
+                    <div class="admin-item">
+                        <span>Security Level:</span>
+                        <span style="color: #28a745;">High (AI + Biometric)</span>
+                    </div>
+                    <div class="admin-buttons-row">
+                        <button class="admin-btn" onclick="enrollFingerprint()">📝 Enroll New Fingerprint</button>
+                        <button class="admin-btn danger" onclick="clearFingerprints()">🗑️ Clear All Fingerprints</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4>🎤 Voice Password Setup</h4>
+                    <div class="admin-item">
+                        <span>Voice Password:</span>
+                        <span id="voicePassword">Access granted</span>
+                    </div>
+                    <input type="text" class="input-field" placeholder="New Voice Password" id="newVoicePassword">
+                    <div class="admin-buttons-row">
+                        <button class="admin-btn" onclick="updateVoicePassword()">Update Voice Password</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h4>📊 AI Security Analytics</h4>
+                    <div class="admin-item">
+                        <span>AI Threat Detections:</span>
+                        <span id="threatDetections">0 today</span>
+                    </div>
+                    <div class="admin-item">
+                        <span>Last AI Analysis:</span>
+                        <span id="lastAnalysis">Never</span>
+                    </div>
+                    <div class="admin-item">
+                        <span>Failed Attempts:</span>
+                        <span id="failedAttempts">0</span>
+                    </div>
+                    <div class="admin-buttons-row">
+                        <button class="admin-btn" onclick="resetStats()">Reset Statistics</button>
+                    </div>
+                </div>
+
+                <div class="admin-panel-footer">
+                    <button class="logout-btn" onclick="adminLogout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chat Widget -->
+    <div class="ai-chat-widget">
+        <button class="ai-chat-toggle" id="aiChatToggle" onclick="toggleAIChat()">🤖</button>
+        
+        <div class="ai-chat-panel" id="aiChatPanel">
+            <div class="ai-chat-header">
+                <h3>
+                    <span class="ai-status-indicator"></span>
+                    Gemini Security AI
+                </h3>
+                <button class="ai-chat-minimize" onclick="toggleAIChat()">−</button>
+            </div>
+            
+            <div class="ai-chat-content" id="aiChatContent">
+                <div class="ai-message">
+                    <div class="ai-message-avatar ai-avatar">🤖</div>
+                    <div class="ai-message-content">
+                        Hi! I'm your security AI. I can help with authentication, analyze security patterns, and answer questions. What do you need?
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ai-chat-input">
+                <div class="ai-input-controls">
+                    <button class="ai-control-btn ai-image-btn" onclick="selectAIImage()" title="Upload image">📷</button>
+                    <button class="ai-control-btn ai-mic-btn" id="aiMicBtn" onclick="toggleAIRecording()" title="Voice input">🎤</button>
+                </div>
+                <textarea class="ai-input-field" id="aiInputField" placeholder="Ask about security, upload images..." rows="1" onkeydown="handleAIKeyDown(event)" oninput="autoResizeAI(this)"></textarea>
+                <button class="ai-control-btn ai-send-btn" id="aiSendBtn" onclick="sendAIMessage()" disabled>➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Security Alert -->
+    <div class="ai-security-alert" id="aiSecurityAlert">
+        <span class="ai-security-icon">🚨</span>
+        <div>
+            <strong>Security Alert</strong><br>
+            <span id="alertMessage">Suspicious activity detected</span>
+        </div>
+    </div>
+
+    <!-- AI Analyzing Indicator -->
+    <div class="ai-analyzing-indicator" id="aiAnalyzingIndicator">
+        <div class="ai-analyzing-spinner"></div>
+        <span>AI Analyzing Security...</span>
+    </div>
+
+    <!-- Contact Admin Panel -->
+    <div class="contact-panel" id="contactPanel">
+        <div class="contact-content">
+            <h3>
+                📧 Contact Administrator
+            </h3>
+            
+            <div id="contactForm" class="contact-form">
+                <form id="adminContactForm" action="https://formspree.io/f/xrbygvga" method="POST">
+                    <div class="contact-form-row">
+                        <div class="form-group">
+                            <label for="contactName">Your Name *</label>
+                            <input type="text" id="contactName" name="name" required placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="contactEmail">Your Email *</label>
+                            <input type="email" id="contactEmail" name="email" required placeholder="your@email.com">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactSubject">Subject *</label>
+                        <input type="text" id="contactSubject" name="subject" placeholder="Authentication Issue, Account Access, etc." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactIssueType">Issue Category</label>
+                        <select id="contactIssueType" name="issue_type">
+                            <option value="authentication">🔐 Authentication Problem</option>
+                            <option value="access">🚪 Access Issues</option>
+                            <option value="security">🛡️ Security Concern</option>
+                            <option value="technical">🔧 Technical Support</option>
+                            <option value="account">👤 Account Management</option>
+                            <option value="other">❓ Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactMessage">Detailed Message *</label>
+                        <textarea id="contactMessage" name="message" placeholder="Please describe your issue or question in detail. Include any error messages, steps you tried, and when the problem started..." required rows="5"></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <input type="checkbox" id="includeSystemInfo" checked style="margin: 0;">
+                            <label for="includeSystemInfo" style="margin: 0; font-size: 13px; cursor: pointer;">Include system information for troubleshooting</label>
+                        </div>
+                        <div id="systemInfoPreview" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-size: 11px; color: #6b7280; display: block;">
+                            System info will be automatically collected to help diagnose issues
+                        </div>
+                        <textarea id="contactSystem" name="system_info" style="display: none;" readonly></textarea>
+                    </div>
+                    
+                    <input type="hidden" name="form_source" value="SecureGate Authentication System">
+                    <input type="hidden" name="timestamp" id="contactTimestamp">
+                    <input type="hidden" name="user_session" id="contactSession">
+                    
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" onclick="closeContactForm()">Cancel</button>
+                        <button type="submit" class="submit-contact-btn" id="submitContactBtn">
+                            📧 Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div id="contactSuccess" class="contact-success">
+                <div class="success-icon">✅</div>
+                <h3>Message Sent Successfully!</h3>
+                <p>Your message has been delivered to our administrator at <strong>henockhnk092@gmail.com</strong></p>
+                <p>You should receive a response within 24 hours during business days.</p>
+                <button class="submit-contact-btn" onclick="closeContactForm()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for AI -->
+    <input type="file" id="aiFileInput" class="hidden-input" accept="image/*" onchange="handleAIImageSelect()">
+
+    <script>
+        // Global variables
+        let isAuthenticated = false;
+        let isAdminAuthenticated = false;
+        let authMethod = '';
+        let currentPin = '';
+        let targetPin = '1234';
+        let devicePassword = 'secure123';
+        let voicePassword = 'access granted';
+
+        // AI Variables
+        let geminiApiKey = 'AIzaSyDBzJeHlB5ayYe0iiM0bN9BtIn09Udnz6Y';
+        let aiChatOpen = false;
+        let aiRecording = false;
+        let aiRecognition = null;
+        let selectedAIImage = null;
+        let currentSpeechUtterance = null;
+
+        // Admin settings
+        let adminSettings = {
+            schemaPattern: '1→2→3→6→9',
+            pin: '1234',
+            password: 'secure123',
+            voicePassword: 'access granted',
+            faceCount: 1,
+            fingerprintCount: 2,
+            lastAccess: 'Never',
+            lastAnalysis: 'Never',
+            failedAttempts: 0,
+            threatDetections: 0,
+            aiAnalysisLevel: 'enhanced'
+        };
+
+        // Admin Modal Functions
+        function toggleAdminMode() {
+            document.getElementById('adminModal').style.display = 'flex';
+            document.getElementById('adminLoginForm').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+            // Clear form
+            document.getElementById('adminUsername').value = '';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+            isAdminAuthenticated = false;
+            // Clear form
+            document.getElementById('adminUsername').value = '';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        async function adminLogin() {
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            // AI Analysis of admin login attempt
+            await analyzeWithAI('Admin Login', `Username: ${username}, Attempt timestamp`, username === 'admin' && password === 'admin123');
+            
+            if (username === 'admin' && password === 'admin123') {
+                isAdminAuthenticated = true;
+                document.getElementById('adminLoginForm').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                updateAdminPanel();
+                showMessage('AI-verified admin login successful!', 'success');
+                
+                if (aiChatOpen) {
+                    addAIMessage('ai', '🔧 Admin access granted. All actions monitored by AI for security.');
+                }
+            } else {
+                showMessage('Invalid admin credentials. AI security monitoring active.', 'error');
+                adminSettings.failedAttempts++;
+                showSecurityAlert('Unauthorized admin access attempt detected');
+            }
+        }
+
+        function adminLogout() {
+            isAdminAuthenticated = false;
+            closeAdminModal();
+            showMessage('Admin logged out successfully.', 'success');
+        }
+
+        // Update admin panel with current settings
+        function updateAdminPanel() {
+            document.getElementById('adminCurrentPattern').textContent = adminSettings.schemaPattern;
+            document.getElementById('faceCount').textContent = adminSettings.faceCount + ' registered';
+            document.getElementById('fingerprintCount').textContent = adminSettings.fingerprintCount + ' stored';
+            document.getElementById('voicePassword').textContent = adminSettings.voicePassword;
+            document.getElementById('lastAnalysis').textContent = adminSettings.lastAnalysis;
+            document.getElementById('failedAttempts').textContent = adminSettings.failedAttempts;
+            document.getElementById('threatDetections').textContent = adminSettings.threatDetections + ' today';
+        }
+
+        // Admin functions
+        function updateSchemaPattern() {
+            const newPattern = document.getElementById('newSchemaPattern').value;
+            if (newPattern) {
+                adminSettings.schemaPattern = newPattern;
+                targetSchema = newPattern.split(/[-→]/).map(n => parseInt(n) - 1);
+                updateCurrentPattern();
+                showMessage('AI-verified schema pattern updated successfully!', 'success');
+                updateAdminPanel();
+                document.getElementById('newSchemaPattern').value = '';
+            }
+        }
+
+        function updatePassword() {
+            const newPass = document.getElementById('newPassword').value;
+            if (newPass) {
+                adminSettings.password = newPass;
+                devicePassword = newPass;
+                showMessage('AI-analyzed password updated successfully!', 'success');
+                document.getElementById('newPassword').value = '';
+            }
+        }
+
+        function updatePin() {
+            const newPin = document.getElementById('newPin').value;
+            if (newPin && newPin.length === 4 && /^\d{4}$/.test(newPin)) {
+                adminSettings.pin = newPin;
+                targetPin = newPin;
+                showMessage('AI-verified PIN updated successfully!', 'success');
+                document.getElementById('newPin').value = '';
+            } else {
+                showMessage('Please enter a valid 4-digit PIN.', 'error');
+            }
+        }
+
+        function uploadFace(event) {
+            const file = event.target.files[0];
+            if (file) {
+                adminSettings.faceCount++;
+                updateAdminPanel();
+                showMessage('Face image uploaded and AI-analyzed successfully!', 'success');
+            }
+        }
+
+        function clearFaces() {
+            adminSettings.faceCount = 0;
+            updateAdminPanel();
+            showMessage('All face data cleared from AI database.', 'success');
+        }
+
+        function enrollFingerprint() {
+            showMessage('Place your finger on the sensor for AI enrollment...', 'success');
+            
+            setTimeout(() => {
+                const success = Math.random() > 0.1;
+                if (success) {
+                    adminSettings.fingerprintCount++;
+                    updateAdminPanel();
+                    showMessage('Fingerprint enrolled and AI-verified successfully!', 'success');
+                } else {
+                    showMessage('AI enrollment failed. Please try again with clean, dry finger.', 'error');
+                }
+            }, 3000);
+        }
+
+        function clearFingerprints() {
+            if (confirm('This will remove all enrolled fingerprints from AI database. Are you sure?')) {
+                adminSettings.fingerprintCount = 0;
+                updateAdminPanel();
+                showMessage('All fingerprint data cleared from AI system successfully.', 'success');
+            }
+        }
+
+        function updateVoicePassword() {
+            const newVoice = document.getElementById('newVoicePassword').value;
+            if (newVoice) {
+                adminSettings.voicePassword = newVoice;
+                voicePassword = newVoice.toLowerCase();
+                updateAdminPanel();
+                showMessage('AI-analyzed voice password updated successfully!', 'success');
+                document.getElementById('newVoicePassword').value = '';
+            }
+        }
+
+        function resetStats() {
+            adminSettings.lastAccess = 'Never';
+            adminSettings.lastAnalysis = 'Never';
+            adminSettings.failedAttempts = 0;
+            adminSettings.threatDetections = 0;
+            updateAdminPanel();
+            showMessage('AI statistics reset successfully!', 'success');
+        }
+
+        // AI Chat Functions
+        function toggleAIChat() {
+            aiChatOpen = !aiChatOpen;
+            const panel = document.getElementById('aiChatPanel');
+            const toggle = document.getElementById('aiChatToggle');
+            
+            if (aiChatOpen) {
+                panel.style.display = 'flex';
+                toggle.classList.add('active');
+                toggle.textContent = '✖';
+            } else {
+                panel.style.display = 'none';
+                toggle.classList.remove('active');
+                toggle.textContent = '🤖';
+            }
+        }
+
+        function sendAIMessage() {
+            const input = document.getElementById('aiInputField');
+            const message = input.value.trim();
+            
+            if (!message && !selectedAIImage) return;
+            
+            // Add user message
+            addAIMessage('user', message, selectedAIImage);
+            
+            // Clear input
+            input.value = '';
+            autoResizeAI(input);
+            updateAISendButton();
+            
+            // Clear selected image
+            const currentImage = selectedAIImage;
+            selectedAIImage = null;
+            
+            // Show AI analyzing
+            document.getElementById('aiAnalyzingIndicator').style.display = 'flex';
+            
+            // Process with Gemini AI
+            processAIMessage(message, currentImage);
+        }
+
+        async function processAIMessage(message, image) {
+            try {
+                let prompt = message;
+                
+                // Add security context if authentication is in progress
+                if (!isAuthenticated) {
+                    prompt = `SECURITY CONTEXT: User is attempting authentication on SecureGate system. Current authentication methods available: Pattern Lock, PIN, Password, Fingerprint, Face ID, Voice Recognition.
+
+USER MESSAGE: ${message}
+
+As a security AI assistant for SecureGate, provide helpful guidance about authentication methods, security, troubleshooting, or system usage.
+
+IMPORTANT: Keep responses SHORT and CONCISE (1-2 sentences max). Be direct and helpful without lengthy explanations.`;
+                } else {
+                    prompt = `SECURITY CONTEXT: User has successfully authenticated and is using the SecureGate system. You are their AI security assistant.
+
+USER MESSAGE: ${message}
+
+Provide helpful assistance with security, system usage, or general questions.
+
+IMPORTANT: Keep responses SHORT and CONCISE (1-2 sentences max). Be direct and helpful without lengthy explanations.`;
+                }
+
+                const response = await callGeminiAPI(prompt, image);
+                
+                document.getElementById('aiAnalyzingIndicator').style.display = 'none';
+                
+                if (response && response.candidates && response.candidates[0]) {
+                    const aiResponse = response.candidates[0].content.parts[0].text;
+                    addAIMessage('ai', aiResponse);
+                    
+                    // Update last analysis time
+                    adminSettings.lastAnalysis = new Date().toLocaleString();
+                } else {
+                    throw new Error('Invalid AI response');
+                }
+            } catch (error) {
+                document.getElementById('aiAnalyzingIndicator').style.display = 'none';
+                console.error('AI Error:', error);
+                addAIMessage('ai', 'Error processing request. Please check settings or try again.');
+            }
+        }
+
+        async function callGeminiAPI(text, image) {
+            const parts = [];
+            
+            if (text) {
+                parts.push({ text: text });
+            }
+            
+            if (image) {
+                parts.push({
+                    inline_data: {
+                        mime_type: image.type,
+                        data: await fileToBase64(image)
+                    }
+                });
+            }
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: parts }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 1024,
+                        },
+                        safetySettings: [
+                            {
+                                category: "HARM_CATEGORY_HARASSMENT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            },
+                            {
+                                category: "HARM_CATEGORY_HATE_SPEECH",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            },
+                            {
+                                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            },
+                            {
+                                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`API Error ${response.status}: ${errorData}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function addAIMessage(sender, text, image = null) {
+            const content = document.getElementById('aiChatContent');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `ai-message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `ai-message-avatar ${sender === 'ai' ? 'ai-avatar' : 'user-avatar'}`;
+            avatar.textContent = sender === 'ai' ? '🤖' : '👤';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'ai-message-content';
+            
+            if (text) {
+                const textDiv = document.createElement('div');
+                textDiv.innerHTML = parseFormattedText(text);
+                messageContent.appendChild(textDiv);
+            }
+            
+            if (image) {
+                const imgElement = document.createElement('img');
+                imgElement.style.maxWidth = '100%';
+                imgElement.style.borderRadius = '8px';
+                imgElement.style.marginTop = '5px';
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imgElement.src = e.target.result;
+                };
+                reader.readAsDataURL(image);
+                
+                messageContent.appendChild(imgElement);
+            }
+            
+            // Add action buttons for AI messages
+            if (sender === 'ai' && text) {
+                const actions = document.createElement('div');
+                actions.className = 'ai-message-actions';
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'ai-action-btn';
+                copyBtn.innerHTML = '📋 Copy';
+                copyBtn.onclick = () => copyAIMessage(text);
+                
+                const speakBtn = document.createElement('button');
+                speakBtn.className = 'ai-action-btn';
+                speakBtn.innerHTML = '🔊 Read';
+                speakBtn.onclick = () => speakAIMessage(text, speakBtn);
+
+                // Speech controls container
+                const speechControls = document.createElement('div');
+                speechControls.className = 'speech-controls';
+                speechControls.style.display = 'none';
+
+                const pauseBtn = document.createElement('button');
+                pauseBtn.className = 'speech-control-btn';
+                pauseBtn.innerHTML = '⏸';
+                pauseBtn.title = 'Pause';
+                pauseBtn.onclick = () => pauseSpeech();
+
+                const stopBtn = document.createElement('button');
+                stopBtn.className = 'speech-control-btn';
+                stopBtn.innerHTML = '⏹';
+                stopBtn.title = 'Stop';
+                stopBtn.onclick = () => stopSpeech(speakBtn, speechControls);
+
+                speechControls.appendChild(pauseBtn);
+                speechControls.appendChild(stopBtn);
+                
+                actions.appendChild(copyBtn);
+                actions.appendChild(speakBtn);
+                actions.appendChild(speechControls);
+                messageContent.appendChild(actions);
+            }
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            content.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            content.scrollTop = content.scrollHeight;
+        }
+
+        async function copyAIMessage(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showAICopyFeedback('✅ Copied!');
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                showAICopyFeedback('❌ Copy failed');
+            }
+        }
+
+        function speakAIMessage(text, speakBtn) {
+            if (!('speechSynthesis' in window)) {
+                showAICopyFeedback('❌ Speech not supported');
+                return;
+            }
+
+            // Stop any current speech
+            if (currentSpeechUtterance) {
+                speechSynthesis.cancel();
+            }
+            
+            currentSpeechUtterance = new SpeechSynthesisUtterance(text);
+            currentSpeechUtterance.rate = 1.0;
+            currentSpeechUtterance.pitch = 1.0;
+            
+            // Use a pleasant voice if available
+            const voices = speechSynthesis.getVoices();
+            const preferredVoice = voices.find(voice => 
+                voice.lang.startsWith('en') && 
+                (voice.name.includes('Female') || voice.name.includes('Google'))
+            );
+            if (preferredVoice) {
+                currentSpeechUtterance.voice = preferredVoice;
+            }
+            
+            const speechControls = speakBtn.parentElement.querySelector('.speech-controls');
+            
+            currentSpeechUtterance.onstart = () => {
+                speakBtn.innerHTML = '🔊 Speaking';
+                speakBtn.classList.add('speaking');
+                speechControls.style.display = 'flex';
+                showAICopyFeedback('🔊 Speaking...');
+            };
+            
+            currentSpeechUtterance.onend = () => {
+                speakBtn.innerHTML = '🔊 Read';
+                speakBtn.classList.remove('speaking');
+                speechControls.style.display = 'none';
+                currentSpeechUtterance = null;
+                showAICopyFeedback('✅ Done reading');
+            };
+            
+            currentSpeechUtterance.onerror = () => {
+                speakBtn.innerHTML = '🔊 Read';
+                speakBtn.classList.remove('speaking');
+                speechControls.style.display = 'none';
+                currentSpeechUtterance = null;
+                showAICopyFeedback('❌ Speech error');
+            };
+
+            currentSpeechUtterance.onpause = () => {
+                showAICopyFeedback('⏸ Paused');
+            };
+
+            currentSpeechUtterance.onresume = () => {
+                showAICopyFeedback('▶ Resumed');
+            };
+            
+            speechSynthesis.speak(currentSpeechUtterance);
+        }
+
+        function pauseSpeech() {
+            if (speechSynthesis.speaking && !speechSynthesis.paused) {
+                speechSynthesis.pause();
+            } else if (speechSynthesis.paused) {
+                speechSynthesis.resume();
+            }
+        }
+
+        function stopSpeech(speakBtn, speechControls) {
+            if (currentSpeechUtterance) {
+                speechSynthesis.cancel();
+                speakBtn.innerHTML = '🔊 Read';
+                speakBtn.classList.remove('speaking');
+                speechControls.style.display = 'none';
+                currentSpeechUtterance = null;
+                showAICopyFeedback('⏹ Stopped');
+            }
+        }
+
+        function showAICopyFeedback(message) {
+            // Create a temporary notification near the chat widget
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 120px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 500;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove the notification after 2 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 2000);
+        }
+
+        function parseFormattedText(text) {
+            if (!text) return '';
+            
+            let formattedText = text;
+            
+            // Convert headings
+            formattedText = formattedText.replace(/^### (.+)$/gm, '<h4 style="margin: 10px 0 5px 0; color: #333;">$1</h4>');
+            formattedText = formattedText.replace(/^## (.+)$/gm, '<h3 style="margin: 12px 0 6px 0; color: #333;">$1</h3>');
+            formattedText = formattedText.replace(/^# (.+)$/gm, '<h3 style="margin: 12px 0 6px 0; color: #333;">$1</h3>');
+            
+            // Convert bold text
+            formattedText = formattedText.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            
+            // Convert bullet points
+            formattedText = formattedText.replace(/^[•*-] (.+)$/gm, '<li style="margin-left: 15px;">$1</li>');
+            
+            // Convert numbered lists
+            formattedText = formattedText.replace(/^\d+\. (.+)$/gm, '<li class="numbered" style="margin-left: 15px;">$1</li>');
+            
+            // Group consecutive list items
+            formattedText = formattedText.replace(/(<li[^>]*>.*?<\/li>)(\s*<li[^>]*>.*?<\/li>)*/gs, function(match) {
+                if (match.includes('class="numbered"')) {
+                    return '<ol style="margin: 8px 0;">' + match.replace(/class="numbered"/g, '') + '</ol>';
+                } else {
+                    return '<ul style="margin: 8px 0;">' + match + '</ul>';
+                }
+            });
+            
+            // Convert paragraphs
+            formattedText = formattedText.split('\n\n').map(paragraph => {
+                paragraph = paragraph.trim();
+                if (!paragraph) return '';
+                
+                if (paragraph.startsWith('<h') || paragraph.startsWith('<ul>') || paragraph.startsWith('<ol>')) {
+                    return paragraph;
+                }
+                
+                if (paragraph.startsWith('<') && paragraph.endsWith('>')) {
+                    return paragraph;
+                }
+                
+                return '<p style="margin: 8px 0; line-height: 1.4;">' + paragraph + '</p>';
+            }).join('');
+            
+            return formattedText.trim();
+        }
+
+        function selectAIImage() {
+            document.getElementById('aiFileInput').click();
+        }
+
+        function handleAIImageSelect() {
+            const fileInput = document.getElementById('aiFileInput');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                selectedAIImage = file;
+                updateAISendButton();
+            }
+        }
+
+        function toggleAIRecording() {
+            if (!aiRecognition) {
+                initAISpeechRecognition();
+            }
+            
+            if (aiRecording) {
+                aiRecognition.stop();
+            } else {
+                aiRecognition.start();
+                startAIRecording();
+            }
+        }
+
+        function initAISpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                aiRecognition = new SpeechRecognition();
+                aiRecognition.continuous = false;
+                aiRecognition.interimResults = false;
+                aiRecognition.lang = 'en-US';
+
+                aiRecognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('aiInputField').value = transcript;
+                    autoResizeAI(document.getElementById('aiInputField'));
+                    updateAISendButton();
+                };
+
+                aiRecognition.onerror = function(event) {
+                    console.error('AI Speech recognition error:', event.error);
+                    stopAIRecording();
+                };
+
+                aiRecognition.onend = function() {
+                    stopAIRecording();
+                };
+            }
+        }
+
+        function startAIRecording() {
+            aiRecording = true;
+            document.getElementById('aiMicBtn').classList.add('recording');
+        }
+
+        function stopAIRecording() {
+            aiRecording = false;
+            document.getElementById('aiMicBtn').classList.remove('recording');
+        }
+
+        function handleAIKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendAIMessage();
+            }
+        }
+
+        function autoResizeAI(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 80) + 'px';
+        }
+
+        function updateAISendButton() {
+            const input = document.getElementById('aiInputField');
+            const sendBtn = document.getElementById('aiSendBtn');
+            sendBtn.disabled = !input.value.trim() && !selectedAIImage;
+        }
+
+        // AI Security Analysis Functions
+        async function analyzeWithAI(authType, data, isSuccess) {
+            const analysisPrompt = `
+SECURITY ANALYSIS REQUEST:
+Authentication Type: ${authType}
+Success: ${isSuccess}
+Data: ${data}
+Timestamp: ${new Date().toISOString()}
+
+Analyze this authentication attempt for:
+1. Security level and strength
+2. Potential threats or anomalies  
+3. Recommendations for improvement
+4. Risk assessment
+
+Provide a brief security analysis (2-3 sentences max) and a confidence score.`;
+
+            try {
+                document.getElementById('aiAnalyzingIndicator').style.display = 'flex';
+                
+                const response = await callGeminiAPI(analysisPrompt);
+                
+                document.getElementById('aiAnalyzingIndicator').style.display = 'none';
+                
+                if (response && response.candidates && response.candidates[0]) {
+                    const analysis = response.candidates[0].content.parts[0].text;
+                    
+                    // Add AI security message to chat if open
+                    if (aiChatOpen) {
+                        addAIMessage('ai', `🔒 **Security Analysis - ${authType}**\n\n${analysis}`);
+                    }
+                    
+                    // Update admin stats
+                    adminSettings.lastAnalysis = new Date().toLocaleString();
+                    
+                    return analysis;
+                }
+            } catch (error) {
+                console.error('AI Analysis Error:', error);
+                document.getElementById('aiAnalyzingIndicator').style.display = 'none';
+            }
+            
+            return null;
+        }
+
+        function showSecurityAlert(message) {
+            const alert = document.getElementById('aiSecurityAlert');
+            const alertMessage = document.getElementById('alertMessage');
+            
+            alertMessage.textContent = message;
+            alert.style.display = 'flex';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+            
+            // Increment threat detection counter
+            adminSettings.threatDetections++;
+        }
+
+        // Method switching
+        function showMethod(method) {
+            document.querySelectorAll('.method-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.auth-method').forEach(m => m.classList.remove('active'));
+            
+            event.target.closest('.method-btn').classList.add('active');
+            document.getElementById(method + '-method').classList.add('active');
+            
+            if (method === 'faceid') {
+                initCamera();
+            } else {
+                stopCamera();
+            }
+
+            if (method === 'schema') {
+                setTimeout(() => {
+                    initializePatternLock();
+                    clearSchema();
+                }, 100);
+            }
+
+            if (method === 'pin') {
+                currentPin = '';
+                updatePinDisplay();
+            }
+            
+            // AI notification about method switch
+            if (aiChatOpen) {
+                addAIMessage('ai', `🔒 Switched to ${method} authentication. AI monitoring active.`);
+            }
+        }
+
+        // Schema/Pattern Lock functionality
+        let currentSchema = [];
+        let targetSchema = [0, 1, 2, 5, 8]; // Default: 1→2→3→6→9
+        let isDrawing = false;
+        let canvas, ctx;
+        let gridContainer;
+        let dots = [];
+        let lines = [];
+
+        function initializePatternLock() {
+            gridContainer = document.getElementById('schemaGrid');
+            canvas = document.getElementById('patternCanvas');
+            if (!canvas) return;
+            
+            ctx = canvas.getContext('2d');
+            dots = Array.from(document.querySelectorAll('.schema-dot'));
+            
+            resizeCanvas();
+            
+            gridContainer.addEventListener('mousedown', startPattern);
+            gridContainer.addEventListener('mousemove', updatePattern);
+            gridContainer.addEventListener('mouseup', endPattern);
+            gridContainer.addEventListener('mouseleave', endPattern);
+            
+            gridContainer.addEventListener('touchstart', handleTouch);
+            gridContainer.addEventListener('touchmove', handleTouch);
+            gridContainer.addEventListener('touchend', endPattern);
+            
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        function resizeCanvas() {
+            if (canvas && gridContainer) {
+                const rect = gridContainer.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                redrawPattern();
+            }
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            if (!touch) return;
+            
+            const mouseEvent = new MouseEvent(
+                e.type === 'touchstart' ? 'mousedown' : 
+                e.type === 'touchmove' ? 'mousemove' : 'mouseup',
+                {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                }
+            );
+            
+            gridContainer.dispatchEvent(mouseEvent);
+        }
+
+        function startPattern(e) {
+            if (e.target.classList.contains('schema-dot')) {
+                isDrawing = true;
+                currentSchema = [];
+                lines = [];
+                clearVisualPattern();
+                
+                const dotIndex = parseInt(e.target.dataset.index);
+                addDotToPattern(dotIndex);
+                showPatternFeedback('Drawing pattern...', 'drawing');
+            }
+        }
+
+        function updatePattern(e) {
+            if (!isDrawing) return;
+            
+            const rect = gridContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const dotElement = document.elementFromPoint(e.clientX, e.clientY);
+            if (dotElement && dotElement.classList.contains('schema-dot')) {
+                const dotIndex = parseInt(dotElement.dataset.index);
+                if (!currentSchema.includes(dotIndex)) {
+                    addDotToPattern(dotIndex);
+                }
+            }
+            
+            redrawPattern(x, y);
+        }
+
+        function endPattern(e) {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            dots.forEach(dot => dot.classList.remove('current'));
+            redrawPattern();
+            updateCurrentPattern();
+            
+            if (currentSchema.length > 0) {
+                showPatternFeedback(`Pattern drawn with ${currentSchema.length} dots`, 'success');
+            } else {
+                showPatternFeedback('No pattern drawn', 'error');
+            }
+        }
+
+        function addDotToPattern(index) {
+            if (!currentSchema.includes(index)) {
+                dots.forEach(dot => dot.classList.remove('current'));
+                
+                currentSchema.push(index);
+                const dot = dots[index];
+                dot.classList.add('connected');
+                dot.classList.add('current');
+                
+                if (currentSchema.length > 1) {
+                    const prevIndex = currentSchema[currentSchema.length - 2];
+                    addLineBetweenDots(prevIndex, index);
+                }
+            }
+        }
+
+        function addLineBetweenDots(fromIndex, toIndex) {
+            const fromDot = dots[fromIndex];
+            const toDot = dots[toIndex];
+            
+            const fromRect = fromDot.getBoundingClientRect();
+            const toRect = toDot.getBoundingClientRect();
+            const containerRect = gridContainer.getBoundingClientRect();
+            
+            const fromX = fromRect.left + fromRect.width / 2 - containerRect.left;
+            const fromY = fromRect.top + fromRect.height / 2 - containerRect.top;
+            const toX = toRect.left + toRect.width / 2 - containerRect.left;
+            const toY = toRect.top + toRect.height / 2 - containerRect.top;
+            
+            lines.push({ fromX, fromY, toX, toY });
+        }
+
+        function redrawPattern(currentX = null, currentY = null) {
+            if (!ctx || !canvas) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            
+            lines.forEach(line => {
+                ctx.beginPath();
+                ctx.moveTo(line.fromX, line.fromY);
+                ctx.lineTo(line.toX, line.toY);
+                ctx.stroke();
+            });
+            
+            if (isDrawing && currentSchema.length > 0 && currentX && currentY) {
+                const lastDotIndex = currentSchema[currentSchema.length - 1];
+                const lastDot = dots[lastDotIndex];
+                const lastDotRect = lastDot.getBoundingClientRect();
+                const containerRect = gridContainer.getBoundingClientRect();
+                
+                const lastX = lastDotRect.left + lastDotRect.width / 2 - containerRect.left;
+                const lastY = lastDotRect.top + lastDotRect.height / 2 - containerRect.top;
+                
+                ctx.strokeStyle = '#4facfe';
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(currentX, currentY);
+                ctx.stroke();
+            }
+        }
+
+        function clearSchema() {
+            currentSchema = [];
+            lines = [];
+            isDrawing = false;
+            clearVisualPattern();
+            updateCurrentPattern();
+            hidePatternFeedback();
+        }
+
+        function clearVisualPattern() {
+            dots.forEach(dot => {
+                dot.classList.remove('connected', 'current');
+            });
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function updateCurrentPattern() {
+            const patternDisplay = document.getElementById('currentPattern');
+            if (currentSchema.length > 0) {
+                const pattern = currentSchema.map(i => i + 1).join('→');
+                patternDisplay.textContent = pattern;
+            } else {
+                patternDisplay.textContent = 'No pattern drawn';
+            }
+        }
+
+        function showPatternFeedback(message, type) {
+            const feedback = document.getElementById('patternFeedback');
+            feedback.textContent = message;
+            feedback.className = `pattern-feedback ${type}`;
+            feedback.style.display = 'block';
+        }
+
+        function hidePatternFeedback() {
+            const feedback = document.getElementById('patternFeedback');
+            feedback.style.display = 'none';
+        }
+
+        function arraysEqual(a, b) {
+            return a.length === b.length && a.every((val, i) => val === b[i]);
+        }
+
+        // Authentication Functions with AI Integration
+        async function submitSchema() {
+            if (currentSchema.length === 0) {
+                showPatternFeedback('Please draw a pattern first.', 'error');
+                return;
+            }
+
+            if (currentSchema.length < 4) {
+                showPatternFeedback('Pattern must connect at least 4 dots.', 'error');
+                showSecurityAlert('Weak pattern detected - too few connection points');
+                return;
+            }
+
+            const patternData = `Pattern: ${currentSchema.map(i => i + 1).join('→')}, Length: ${currentSchema.length} dots`;
+            
+            if (arraysEqual(currentSchema, targetSchema)) {
+                showPatternFeedback('Pattern correct! AI analyzing...', 'success');
+                
+                // AI Analysis
+                const analysis = await analyzeWithAI('Pattern Lock', patternData, true);
+                
+                setTimeout(() => {
+                    proceedToWelcome('Schema Pattern');
+                }, 1000);
+            } else {
+                showPatternFeedback('Incorrect pattern. AI security analysis in progress...', 'error');
+                adminSettings.failedAttempts++;
+                
+                // AI Analysis for failed attempt
+                await analyzeWithAI('Pattern Lock', patternData, false);
+                showSecurityAlert('Failed pattern attempt detected');
+                
+                setTimeout(() => {
+                    clearSchema();
+                }, 1500);
+            }
+        }
+
+        // PIN functionality
+        function addPin(digit) {
+            if (currentPin.length < 4) {
+                currentPin += digit;
+                updatePinDisplay();
+            }
+        }
+
+        function clearPin() {
+            currentPin = currentPin.slice(0, -1);
+            updatePinDisplay();
+        }
+
+        function updatePinDisplay() {
+            const display = document.getElementById('pinDisplay');
+            if (display) {
+                const dots = '●'.repeat(currentPin.length) + '○'.repeat(4 - currentPin.length);
+                display.textContent = dots;
+            }
+        }
+
+        async function submitPin() {
+            if (currentPin.length === 4) {
+                const success = currentPin === targetPin;
+                
+                // AI Analysis
+                await analyzeWithAI('PIN', `PIN Length: 4 digits, Input Pattern Analysis`, success);
+                
+                if (success) {
+                    proceedToWelcome('PIN Authentication');
+                } else {
+                    showMessage('Incorrect PIN. AI analyzing security implications...', 'error');
+                    adminSettings.failedAttempts++;
+                    showSecurityAlert('Failed PIN attempt - AI monitoring active');
+                }
+                currentPin = '';
+                updatePinDisplay();
+            } else {
+                showMessage('Please enter a 4-digit PIN.', 'error');
+            }
+        }
+
+        async function submitPassword() {
+            const password = document.getElementById('devicePassword').value;
+            const success = password === devicePassword;
+            
+            // AI Analysis
+            await analyzeWithAI('Password', `Length: ${password.length}, Complexity Analysis`, success);
+            
+            if (success) {
+                proceedToWelcome('Password Authentication');
+            } else {
+                showMessage('Incorrect password. AI security scan initiated...', 'error');
+                adminSettings.failedAttempts++;
+                showSecurityAlert('Password breach attempt detected');
+            }
+            document.getElementById('devicePassword').value = '';
+        }
+
+        async function scanFingerprint() {
+            if (adminSettings.fingerprintCount === 0) {
+                showMessage('No fingerprints enrolled. Contact administrator.', 'error');
+                return;
+            }
+            
+            const sensor = document.getElementById('fingerprintSensor');
+            sensor.classList.add('scanning');
+            
+            showMessage('AI analyzing biometric patterns...', 'success');
+            
+            setTimeout(async () => {
+                sensor.classList.remove('scanning');
+                const success = Math.random() > 0.15; // 85% success rate
+                
+                // AI Analysis
+                await analyzeWithAI('Fingerprint', 'Biometric scan analysis, ridge patterns, minutiae points', success);
+                
+                if (success) {
+                    showMessage('Fingerprint verified! AI confidence: 99.8%', 'success');
+                    setTimeout(() => {
+                        proceedToWelcome('Fingerprint Authentication');
+                    }, 1000);
+                } else {
+                    showMessage('Fingerprint not recognized. AI security scan active.', 'error');
+                    adminSettings.failedAttempts++;
+                    showSecurityAlert('Biometric authentication failure - monitoring increased');
+                }
+            }, 2500);
+        }
+
+        async function startFaceRecognition() {
+            if (adminSettings.faceCount === 0) {
+                showMessage('No faces registered. Contact administrator.', 'error');
+                return;
+            }
+            
+            showMessage('AI analyzing facial features...', 'success');
+            
+            setTimeout(async () => {
+                const success = Math.random() > 0.2;
+                
+                // AI Analysis
+                await analyzeWithAI('Face Recognition', 'Facial landmark analysis, geometric patterns, liveness detection', success);
+                
+                if (success) {
+                    proceedToWelcome('Face Recognition');
+                } else {
+                    showMessage('Face not recognized. AI performing additional security checks...', 'error');
+                    adminSettings.failedAttempts++;
+                    showSecurityAlert('Facial recognition failure - potential spoofing detected');
+                }
+            }, 3000);
+        }
+
+        async function startVoiceRecognition() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            const voiceStatus = document.getElementById('voiceStatus');
+            
+            voiceBtn.classList.add('recording');
+            voiceStatus.textContent = `AI listening for voice patterns... Say "${adminSettings.voicePassword}"`;
+            
+            setTimeout(async () => {
+                voiceBtn.classList.remove('recording');
+                const success = Math.random() > 0.3;
+                
+                // AI Analysis
+                await analyzeWithAI('Voice Recognition', 'Voice pattern analysis, frequency analysis, speaker verification', success);
+                
+                if (success) {
+                    proceedToWelcome('Voice Recognition');
+                } else {
+                    voiceStatus.textContent = 'Voice not recognized. AI analyzing for security threats...';
+                    adminSettings.failedAttempts++;
+                    showSecurityAlert('Voice authentication failed - potential voice spoofing');
+                    setTimeout(() => {
+                        voiceStatus.textContent = 'Click microphone (AI will analyze voice patterns)';
+                    }, 3000);
+                }
+            }, 3000);
+        }
+
+        // Camera functionality
+        let currentCamera = 'front';
+        let stream = null;
+
+        async function initCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: currentCamera === 'front' ? 'user' : 'environment'
+                    }
+                };
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const video = document.getElementById('cameraVideo');
+                video.srcObject = stream;
+            } catch (error) {
+                showMessage('Camera access denied or not available.', 'error');
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        function switchCamera(camera) {
+            currentCamera = camera;
+            stopCamera();
+            initCamera();
+            showMessage(`Switched to ${camera} camera`, 'success');
+        }
+
+        // Authentication success handler
+        function proceedToWelcome(method) {
+            authMethod = method;
+            isAuthenticated = true;
+            adminSettings.lastAccess = new Date().toLocaleString();
+            
+            // Update welcome page with auth details
+            document.getElementById('authMethodUsed').textContent = `AI-Verified ${method}`;
+            document.getElementById('loginTime').textContent = new Date().toLocaleTimeString();
+            
+            // Hide authentication interface and show welcome page
+            document.getElementById('userGateway').classList.add('hidden');
+            document.getElementById('welcomePage').classList.remove('hidden');
+            
+            stopCamera();
+            
+            // AI Success Message
+            if (aiChatOpen) {
+                addAIMessage('ai', `✅ Authentication successful! ${method} verified with high confidence. How can I help?`);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            isAuthenticated = false;
+            authMethod = '';
+            currentPin = '';
+            
+            // Clear form values
+            document.getElementById('devicePassword').value = '';
+            clearSchema();
+            updatePinDisplay();
+            
+            // Show authentication interface and hide welcome page
+            document.getElementById('userGateway').classList.remove('hidden');
+            document.getElementById('welcomePage').classList.add('hidden');
+            
+            showMessage('Logged out successfully.', 'success');
+            
+            // AI Logout Message
+            if (aiChatOpen) {
+                addAIMessage('ai', '👋 Logged out successfully. AI monitoring reset. Ready for new authentication.');
+            }
+        }
+
+        // Utility functions
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="${type}-message">${message}</div>`;
+            
+            setTimeout(() => {
+                messageArea.innerHTML = '';
+            }, 4000);
+        }
+
+        // Contact and Help functions
+        function contactAdmin() {
+            openContactForm();
+            
+            if (aiChatOpen) {
+                addAIMessage('ai', '📞 Contact form opened. Fill out the details and I can help if needed.');
+            }
+        }
+
+        function openContactForm() {
+            // Populate system information
+            const systemInfo = getSystemInfo();
+            document.getElementById('contactSystem').value = systemInfo;
+            
+            // Set timestamp
+            document.getElementById('contactTimestamp').value = new Date().toISOString();
+            
+            // Set session info
+            document.getElementById('contactSession').value = isAuthenticated ? 
+                `Authenticated (${authMethod})` : 'Not Authenticated';
+            
+            // Show the form
+            document.getElementById('contactPanel').style.display = 'flex';
+            document.getElementById('contactForm').style.display = 'block';
+            document.getElementById('contactSuccess').style.display = 'none';
+        }
+
+        function closeContactForm() {
+            document.getElementById('contactPanel').style.display = 'none';
+            
+            // Reset form
+            document.getElementById('adminContactForm').reset();
+            document.getElementById('contactForm').style.display = 'block';
+            document.getElementById('contactSuccess').style.display = 'none';
+        }
+
+        function getSystemInfo() {
+            const now = new Date();
+            return `Browser: ${navigator.userAgent}
+Platform: ${navigator.platform}
+Screen: ${screen.width}x${screen.height}
+Language: ${navigator.language}
+Timestamp: ${now.toLocaleString()}
+Authentication Status: ${isAuthenticated ? `Authenticated via ${authMethod}` : 'Not Authenticated'}
+Failed Attempts: ${adminSettings.failedAttempts}
+Last AI Analysis: ${adminSettings.lastAnalysis}`;
+        }
+
+        function showHelp() {
+            if (!aiChatOpen) {
+                toggleAIChat();
+            }
+            addAIMessage('ai', '🆘 I can help with authentication methods, security analysis, troubleshooting, and best practices. What do you need?');
+        }
+
+        function showTroubleshooting() {
+            if (!aiChatOpen) {
+                toggleAIChat();
+            }
+            addAIMessage('ai', '🔧 Quick fixes: Draw patterns slower, check browser permissions, clean sensors. What specific issue?');
+        }
+
+        function reportIssue() {
+            // Open both AI chat and contact form for comprehensive issue reporting
+            if (!aiChatOpen) {
+                toggleAIChat();
+            }
+            
+            addAIMessage('ai', '🐛 Describe your issue here for quick help, or use "Contact Admin" for email support.');
+            
+            // Also suggest opening the contact form
+            setTimeout(() => {
+                if (confirm('Open admin contact form to report this issue to henockhnk092@gmail.com?')) {
+                    contactAdmin();
+                }
+            }, 1000);
+        }
+
+        // Handle contact form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const contactForm = document.getElementById('adminContactForm');
+            
+            if (contactForm) {
+                contactForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const submitBtn = document.getElementById('submitContactBtn');
+                    const originalText = submitBtn.innerHTML;
+                    
+                    // Disable button and show loading
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '⏳ Sending...';
+                    
+                    try {
+                        const formData = new FormData(contactForm);
+                        
+                        const response = await fetch('https://formspree.io/f/xrbygvga', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            // Show success message
+                            document.getElementById('contactForm').style.display = 'none';
+                            document.getElementById('contactSuccess').style.display = 'block';
+                            
+                            // AI notification
+                            if (aiChatOpen) {
+                                addAIMessage('ai', '✅ Message sent to henockhnk092@gmail.com. Admin will respond within 24 hours.');
+                            }
+                        } else {
+                            throw new Error('Failed to send message');
+                        }
+                    } catch (error) {
+                        console.error('Contact form error:', error);
+                        alert('Error sending message. Try again or contact henockhnk092@gmail.com directly.');
+                        
+                        // AI error notification
+                        if (aiChatOpen) {
+                            addAIMessage('ai', '❌ Send failed. Try again or email henockhnk092@gmail.com directly.');
+                        }
+                    } finally {
+                        // Re-enable button
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                });
+            }
+
+            // Initialize other components
+            initializePatternLock();
+            updateCurrentPattern();
+            updatePinDisplay();
+            initAISpeechRecognition();
+            
+            // Load AI settings
+            const savedApiKey = localStorage.getItem('geminiApiKey');
+            if (savedApiKey) {
+                geminiApiKey = savedApiKey;
+            }
+            
+            const savedAnalysisLevel = localStorage.getItem('aiAnalysisLevel');
+            if (savedAnalysisLevel) {
+                adminSettings.aiAnalysisLevel = savedAnalysisLevel;
+            }
+            
+            // Auto-resize AI input
+            const aiInput = document.getElementById('aiInputField');
+            if (aiInput) {
+                aiInput.addEventListener('input', function() {
+                    autoResizeAI(this);
+                    updateAISendButton();
+                });
+            }
+
+            // Load voices for speech synthesis
+            if ('speechSynthesis' in window) {
+                speechSynthesis.getVoices();
+            }
+        });
+
+        // Clean up when page unloads
+        window.addEventListener('beforeunload', function() {
+            stopCamera();
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+            }
+        });
+    </script>
+</body>
+</html>
